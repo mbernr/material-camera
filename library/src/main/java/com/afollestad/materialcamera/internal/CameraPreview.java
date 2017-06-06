@@ -2,10 +2,12 @@ package com.afollestad.materialcamera.internal;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+import android.view.ViewGroup;
 
 @SuppressWarnings("deprecation")
 @SuppressLint("ViewConstructor")
@@ -78,15 +80,39 @@ class CameraPreview extends SurfaceView implements SurfaceHolder.Callback {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
-        int height = MeasureSpec.getSize(heightMeasureSpec);
+        int height = MeasureSpec.getSize(heightMeasureSpec) - 80;
+        int widthPreview = 0;
+        int heightPreview = 0;
+        int leftMargin = 0;
+        int topMargin = 0;
         if (0 == mRatioWidth || 0 == mRatioHeight) {
-            setMeasuredDimension(width, height);
+            widthPreview = width;
+            heightPreview = height;
         } else {
-            if (width < height * mRatioWidth / mRatioHeight) {
-                setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
+            float screenRatio = ((float) height) / ((float) width);
+            float previewRatio = ((float) mRatioHeight) / ((float) mRatioWidth);
+            if (screenRatio > previewRatio) {
+                widthPreview = width;
+                heightPreview = (int)(width * previewRatio);
             } else {
-                setMeasuredDimension(height * mRatioWidth / mRatioHeight, height);
+                widthPreview = (int) (height / previewRatio);
+                heightPreview = height;
+                if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                    leftMargin = (width - widthPreview) / 2;
+                } else {
+                    topMargin = (height - heightPreview) / 2;
+                }
             }
+        }
+        setMeasuredDimension(widthPreview, heightPreview);
+        setCustomMargins(leftMargin, topMargin, 0, 0);
+    }
+        
+    private void setCustomMargins(int leftMargin, int topMargin, int rightMargin, int bottomMargin) {
+        if (getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
+            ViewGroup.MarginLayoutParams layoutParams = (ViewGroup.MarginLayoutParams) getLayoutParams();
+            layoutParams.setMargins(leftMargin, topMargin, rightMargin, bottomMargin);
+            requestLayout();
         }
     }
 }
