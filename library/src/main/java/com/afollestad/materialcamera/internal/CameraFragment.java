@@ -64,7 +64,7 @@ public class CameraFragment extends BaseCameraFragment implements View.OnClickLi
         Camera.Size backupSize = null;
         for (Camera.Size size : choices) {
             if (size.height <= ci.videoPreferredHeight()) {
-                if (size.width == size.height * ci.videoPreferredAspect())
+                if (size.width+2 <= size.height*ci.videoPreferredAspect() && size.width-2 >= size.height*ci.videoPreferredAspect())
                     return size;
                 if (ci.videoPreferredHeight() >= size.height)
                     backupSize = size;
